@@ -27,6 +27,10 @@
 		},
 
 		methods: {
+			/**
+			 * Keyboard hook to process keyboard event on the game.
+			 * @argument {KeyEvent} evnt KeyPush event.
+			 */
 			keys(evnt) {
 				switch(evnt.keyCode) {
 					case 37:
@@ -44,6 +48,9 @@
 				}
 			},
 
+			/**
+			 * Process game scenario and draw a frame
+			 */
 			drawFrame() {
 				if(this.game.stop) {
 					return;
