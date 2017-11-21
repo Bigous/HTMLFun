@@ -4,12 +4,14 @@ import { NgModule } from '@angular/core';
 
 import { AppComponent } from './app.component';
 import { NibblesComponent } from './nibbles/nibbles.component';
+import { SokobanComponent } from './sokoban/sokoban.component';
 
 
 @NgModule({
   declarations: [
     AppComponent,
-    NibblesComponent
+    NibblesComponent,
+    SokobanComponent
   ],
   imports: [
     BrowserModule

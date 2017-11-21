@@ -7,7 +7,7 @@
 		canv = document.getElementById("gc");
 		ctx = canv.getContext("2d");
 		document.addEventListener("keydown", keyPush);
-		setInterval(game, 1000/15);
+		requestAnimationFrame(game);
 	}
 
 	px = py = 10;
@@ -57,8 +57,9 @@
 
 		ctx.fillStyle = "red";
 		ctx.fillRect(ax*gs, ay*gs, gs-2, gs-2);
-
+		requestAnimationFrame(game);
 	}
+
 	function keyPush(evt) {
 		switch(evt.keyCode) {
 			case 37:
