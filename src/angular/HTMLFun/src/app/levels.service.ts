@@ -1,4 +1,5 @@
-import { EventEmitter, Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { Injectable } from '@angular/core';
 
 @Injectable()
 export class Levels {
@@ -14,9 +15,17 @@ export class Levels {
   private startTime: number;
   private wonTime: number;
 
-  public onLevelChanged: EventEmitter<number> = new EventEmitter<number>();
+  public onLevelChanged: BehaviorSubject<number> = new BehaviorSubject<number>(undefined);
+  public onLevelFinished: BehaviorSubject<{ time: number, moves: number, pushes: number }> =
+    new BehaviorSubject<{ time: number, moves: number, pushes: number }>(undefined);
+  public onManMove: BehaviorSubject<{ oldPos: { x: number, y: number }, newPos: { x: number, y: number } }> =
+    new BehaviorSubject<{ oldPos: { x: number, y: number }, newPos: { x: number, y: number } }>(undefined);
+  public onObjMove: BehaviorSubject<{ oldPos: { x: number, y: number }, newPos: { x: number, y: number } }> =
+    new BehaviorSubject<{ oldPos: { x: number, y: number }, newPos: { x: number, y: number } }>(undefined);
 
-  constructor() {}
+  constructor() {
+    this.undefineAll();
+  }
 
   private undefineAll() {
     this.board = undefined;
@@ -38,7 +47,7 @@ export class Levels {
     if (this.levels.length > level && level >= 0) {
       this.currentLevel = level;
       this.undefineAll();
-      this.onLevelChanged.emit(this.currentLevel);
+      this.onLevelChanged.next(this.currentLevel);
     }
   }
 
@@ -185,6 +194,7 @@ export class Levels {
     this.board[oldPos.y][oldPos.x] -= 4;
     this.manPos = newPos;
     this.moveCount++;
+    this.onManMove.next({oldPos, newPos});
   }
 
   changeObjPos(
@@ -202,6 +212,7 @@ export class Levels {
       this.numOfTreasures++;
     }
     this.pushCount++;
+    this.onObjMove.next({ oldPos, newPos });
   }
 
   moveMan(deltaX: number, deltaY: number) {
@@ -230,9 +241,14 @@ export class Levels {
   }
 
   testLevelWon() {
-    if (this.numOfGoals === this.numOfTreasures) {
+    if (this.wonTime === undefined && this.numOfGoals === this.numOfTreasures) {
       this.wonTime = Date.now();
-      console.log('Ganhou, porra!');
+      const won = {
+        time: this.ElapsedTime,
+        moves: this.moveCount,
+        pushes: this.pushCount
+      };
+      this.onLevelFinished.next(won);
     }
   }
 }

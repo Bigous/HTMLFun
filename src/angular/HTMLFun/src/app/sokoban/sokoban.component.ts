@@ -1,16 +1,17 @@
-import { CANCELLED } from 'dns';
 import {
   AfterViewInit,
   Component,
   ElementRef,
   HostListener,
   NgZone,
+  OnDestroy,
   OnInit,
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
 import { Levels } from '../levels.service';
 import { Sprite } from './sprite';
+import { Subscription } from 'rxjs/Subscription';
 
 @Component({
   selector: 'app-sokoban',
@@ -24,14 +25,15 @@ import { Sprite } from './sprite';
   styles: [],
   encapsulation: ViewEncapsulation.None
 })
-export class SokobanComponent implements AfterViewInit {
+export class SokobanComponent implements AfterViewInit, OnDestroy, OnInit {
+  private subscriptions: Array<Subscription> = [];
   @ViewChild('canv') canvRef: ElementRef;
   public canv: HTMLCanvasElement;
   public ctx: CanvasRenderingContext2D;
   public moves = 0;
   public pushes = 0;
   public imgBorder: Array<Sprite> = [];
-  public imgStartfield: Array<Sprite> = [];
+  public imgStarField: Array<Sprite> = [];
   public imgRakisuta: Sprite;
   public imgGoal: Sprite;
   public imgFloor: Sprite;
@@ -42,13 +44,13 @@ export class SokobanComponent implements AfterViewInit {
   constructor(public ngZone: NgZone, public levels: Levels) {
     for (let i = 0; i < 4; i++) {
       this.imgBorder.push(new Sprite(`./assets/images/border${i}.png`, 1, 1));
-      this.imgStartfield.push(new Sprite(`./assets/images/starfield-${i + 1}.jpg`, 1, 1));
+      this.imgStarField.push(new Sprite(`./assets/images/starfield-${i + 1}.jpg`, 1, 1));
     }
     this.imgRakisuta = new Sprite('./assets/images/rakisuta1.png', 3, 4);
     this.imgGoal = new Sprite('./assets/images/goal.png', 1, 1);
     this.imgFloor = new Sprite('./assets/images/floor.png', 1, 1);
     this.imgObject = new Sprite('./assets/images/object.png', 1, 1);
-    this.imgList.push([this.imgStartfield[0]]);
+    this.imgList.push([this.imgStarField[0]]);
     this.imgList.push([this.imgFloor]);
     this.imgList.push([this.imgBorder[3]]);
     this.imgList.push([this.imgGoal]);
@@ -56,6 +58,22 @@ export class SokobanComponent implements AfterViewInit {
     this.imgList.push([this.imgFloor, this.imgRakisuta]);
     this.imgList.push([this.imgGoal, this.imgObject]);
     this.imgList.push([this.imgGoal, this.imgRakisuta]);
+  }
+
+  ngOnInit() {
+    this.subscriptions.push(this.levels.onLevelFinished.subscribe(won => {
+      this.onWining(won);
+    }));
+    this.subscriptions.push(this.levels.onManMove.subscribe(move => {
+      this.onManMove(move);
+    }));
+    this.subscriptions.push(this.levels.onObjMove.subscribe(move => {
+      this.onManMove(move);
+    }));
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.forEach(s => { s.unsubscribe(); });
   }
 
   public gameLoop(): void {
@@ -78,7 +96,6 @@ export class SokobanComponent implements AfterViewInit {
     const sy = this.canv.height / this.levels.MaxRow;
     const s = Math.floor(Math.min(sx, sy));
 
-    //console.log(s);
     this.imgRakisuta.X = (this.imgRakisuta.X + 1) % this.imgRakisuta.lengthX;
 
     this.ctx.fillStyle = 'black';
@@ -88,7 +105,7 @@ export class SokobanComponent implements AfterViewInit {
     for (const row of board) {
       let iCol = 0;
       for (const cell of row) {
-        if (cell === 2) { //border
+        if (cell === 2) { // border
           let border = 3;
           if (iCol > 0 && row[iCol - 1] === 2 && iCol < row.length - 1 && row[iCol + 1] === 2) {
             border = 1;
@@ -119,8 +136,8 @@ export class SokobanComponent implements AfterViewInit {
   }
 
   @HostListener('body:keydown', ['$event'])
-  public keys(evnt: KeyboardEvent): void {
-    switch (evnt.key) {
+  public keys(event: KeyboardEvent): void {
+    switch (event.key) {
       case 'PageUp':
         this.levels.toNextLevel();
         break;
@@ -144,5 +161,17 @@ export class SokobanComponent implements AfterViewInit {
         this.imgRakisuta.Y = 2;
         break;
     }
+  }
+
+  onWining(won: { time: number, moves: number, pushes: number }): void {
+    // TODO: Implement wining behavior.
+  }
+
+  onManMove(move: { oldPos: { x: number, y: number }, newPos: { x: number, y: number } }) {
+    // TODO: Implement soft transition for man
+  }
+
+  onObjMove(move: { oldPos: { x: number, y: number }, newPos: { x: number, y: number } }) {
+    // TODO: Implement soft transition for object
   }
 }
