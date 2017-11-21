@@ -6,6 +6,7 @@ import { NgModule } from '@angular/core';
 import { AppComponent } from './app.component';
 import { NibblesComponent } from './nibbles/nibbles.component';
 import { SokobanComponent } from './sokoban/sokoban.component';
+import { Levels } from './levels.service';
 
 
 @NgModule({
@@ -18,7 +19,7 @@ import { SokobanComponent } from './sokoban/sokoban.component';
     FormsModule,
     BrowserModule
   ],
-  providers: [],
+  providers: [Levels],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
