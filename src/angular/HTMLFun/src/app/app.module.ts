@@ -1,3 +1,4 @@
+import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 
@@ -12,6 +13,7 @@ import { NibblesComponent } from './nibbles/nibbles.component';
     NibblesComponent
   ],
   imports: [
+    FormsModule,
     BrowserModule
   ],
   providers: [],
