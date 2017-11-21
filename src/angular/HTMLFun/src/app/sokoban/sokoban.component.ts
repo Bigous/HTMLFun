@@ -1,16 +1,31 @@
-import { AfterViewInit, Component, ElementRef, NgZone, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { CANCELLED } from 'dns';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  HostListener,
+  NgZone,
+  OnInit,
+  ViewChild,
+  ViewEncapsulation,
+} from '@angular/core';
 import { Levels } from '../levels.service';
+import { Sprite } from './sprite';
 
 @Component({
   selector: 'app-sokoban',
   template: `
-    <canvas #board width="800" height="600"></canvas>
+  <div>
+    <h1>Sokoban</h1>
+    <h2>Level: {{ levels.CurrentLevel }} / {{ levels.LastLevel }} - Elapsed time: {{ getElapsed() }} s</h2>
+    <canvas #canv width="800" height="600"></canvas>
+  </div>
   `,
   styles: [],
   encapsulation: ViewEncapsulation.None
 })
 export class SokobanComponent implements AfterViewInit {
-  @ViewChild('board') board: ElementRef;
+  @ViewChild('canv') canvRef: ElementRef;
   public canv: HTMLCanvasElement;
   public ctx: CanvasRenderingContext2D;
   public moves = 0;
@@ -21,6 +36,7 @@ export class SokobanComponent implements AfterViewInit {
   public imgGoal: Sprite;
   public imgFloor: Sprite;
   public imgObject: Sprite;
+  public imgList: Array<Array<Sprite>> = [];
   public lastTime = 0;
 
   constructor(public ngZone: NgZone, public levels: Levels) {
@@ -32,6 +48,14 @@ export class SokobanComponent implements AfterViewInit {
     this.imgGoal = new Sprite('./assets/images/goal.png', 1, 1);
     this.imgFloor = new Sprite('./assets/images/floor.png', 1, 1);
     this.imgObject = new Sprite('./assets/images/object.png', 1, 1);
+    this.imgList.push([this.imgStartfield[0]]);
+    this.imgList.push([this.imgFloor]);
+    this.imgList.push([this.imgBorder[3]]);
+    this.imgList.push([this.imgGoal]);
+    this.imgList.push([this.imgFloor, this.imgObject]);
+    this.imgList.push([this.imgFloor, this.imgRakisuta]);
+    this.imgList.push([this.imgGoal, this.imgObject]);
+    this.imgList.push([this.imgGoal, this.imgRakisuta]);
   }
 
   public gameLoop(): void {
@@ -46,52 +70,79 @@ export class SokobanComponent implements AfterViewInit {
 
   public renderFrame(time: number): void {
     const elapsed = time - this.lastTime;
-    // if (elapsed < 99) {
-    //   return;
-    // }
+    if (elapsed < 99) {
+      return;
+    }
     this.lastTime = time;
+    const sx = this.canv.width / this.levels.MaxColumn;
+    const sy = this.canv.height / this.levels.MaxRow;
+    const s = Math.floor(Math.min(sx, sy));
+
+    //console.log(s);
+    this.imgRakisuta.X = (this.imgRakisuta.X + 1) % this.imgRakisuta.lengthX;
+
     this.ctx.fillStyle = 'black';
     this.ctx.fillRect(0, 0, this.canv.width, this.canv.height);
-    this.imgRakisuta.draw(this.ctx,
-      this.canv.width / 2,
-      this.canv.height / 2,
-      Math.floor(time % this.imgRakisuta.lengthX), 0
-    );
+    const board = this.levels.Board;
+    let iRow = 0;
+    for (const row of board) {
+      let iCol = 0;
+      for (const cell of row) {
+        if (cell === 2) { //border
+          let border = 3;
+          if (iCol > 0 && row[iCol - 1] === 2 && iCol < row.length - 1 && row[iCol + 1] === 2) {
+            border = 1;
+          } else if (iCol > 0 && row[iCol - 1] === 2) {
+            border = 2;
+          } else if (iCol < row.length - 1 && row[iCol + 1] === 2) {
+            border = 0;
+          }
+          this.imgList[cell] = [this.imgBorder[border]];
+        }
+        this.imgList[cell].forEach(sprite => {
+          sprite.draw(this.ctx, iCol * s, iRow * s, s, s);
+        });
+        iCol++;
+      }
+      iRow++;
+    }
   }
 
   ngAfterViewInit() {
-    this.canv = this.board.nativeElement;
+    this.canv = this.canvRef.nativeElement;
     this.ctx = this.canv.getContext('2d');
     this.gameLoop();
   }
-}
 
-export class Sprite {
-  public img: HTMLImageElement;
-  private wS: number;
-  private hS: number;
-  private loaded = false;
-
-  constructor(public src: string, public lengthX: number, public lengthY: number) {
-    this.img = new Image();
-    this.img.addEventListener('load', () => {
-      this.wS = this.img.width / lengthX;
-      this.hS = this.img.height / lengthY;
-      this.loaded = true;
-    });
-    this.img.src = src;
+  getElapsed(): number {
+    return Math.floor(this.levels.ElapsedTime / 1000);
   }
 
-  public draw(ctx: CanvasRenderingContext2D, x: number, y: number, sx: number, sy: number) {
-    if (!this.loaded) {
-      return;
+  @HostListener('body:keydown', ['$event'])
+  public keys(evnt: KeyboardEvent): void {
+    switch (evnt.key) {
+      case 'PageUp':
+        this.levels.toNextLevel();
+        break;
+      case 'PageDown':
+        this.levels.toPriorLevel();
+        break;
+      case 'ArrowUp':
+        this.levels.moveMan(0, -1);
+        this.imgRakisuta.Y = 3;
+        break;
+      case 'ArrowDown':
+        this.levels.moveMan(0, 1);
+        this.imgRakisuta.Y = 0;
+        break;
+      case 'ArrowLeft':
+        this.levels.moveMan(-1, 0);
+        this.imgRakisuta.Y = 1;
+        break;
+      case 'ArrowRight':
+        this.levels.moveMan(1, 0);
+        this.imgRakisuta.Y = 2;
+        break;
     }
-    if (sx > this.lengthX) {
-      sx = 0;
-    }
-    if (sy > this.lengthY) {
-      sy = 0;
-    }
-    ctx.drawImage(this.img, this.wS * sx, this.hS * sy, this.wS, this.hS, x, y, this.wS, this.hS);
   }
 }
