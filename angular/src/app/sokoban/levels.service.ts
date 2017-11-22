@@ -18,7 +18,7 @@ export interface IMove {
 }
 
 @Injectable()
-export class Levels {
+export class LevelsService {
   private levels = levels;
   private currentLevel = 0;
   private board: Array<Array<number>>;

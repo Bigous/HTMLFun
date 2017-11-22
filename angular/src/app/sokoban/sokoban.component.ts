@@ -9,7 +9,7 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import { IMove, IPosition, IWin, Levels } from './levels.service';
+import { IMove, IPosition, IWin, LevelsService } from './levels.service';
 import { Sprite } from './sprite';
 import { Subscription } from 'rxjs/Subscription';
 
@@ -47,7 +47,7 @@ import { Subscription } from 'rxjs/Subscription';
   }
   `
   ],
-  providers: [Levels],
+  providers: [LevelsService],
   encapsulation: ViewEncapsulation.None
 })
 export class SokobanComponent implements AfterViewInit, OnDestroy, OnInit {
@@ -67,7 +67,7 @@ export class SokobanComponent implements AfterViewInit, OnDestroy, OnInit {
   public imgList: Array<Array<Sprite>> = [];
   public lastTime = 0;
 
-  constructor(public ngZone: NgZone, public levels: Levels) {
+  constructor(public ngZone: NgZone, public levels: LevelsService) {
     for (let i = 0; i < 4; i++) {
       this.imgBorder.push(new Sprite(`./assets/images/border${i}.png`, 1, 1));
       this.imgStarField.push(
