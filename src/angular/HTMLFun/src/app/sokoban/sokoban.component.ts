@@ -69,7 +69,7 @@ export class SokobanComponent implements AfterViewInit, OnDestroy, OnInit {
       this.onManMove(move);
     }));
     this.subscriptions.push(this.levels.onObjMove.subscribe(move => {
-      this.onManMove(move);
+      this.onObjMove(move);
     }));
   }
 
