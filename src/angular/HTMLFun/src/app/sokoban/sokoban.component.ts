@@ -147,7 +147,7 @@ export class SokobanComponent implements AfterViewInit, OnDestroy, OnInit {
     return Math.floor(this.levels.ElapsedTime / 1000);
   }
 
-  @HostListener('body:keydown', ['$event'])
+  @HostListener('document:keydown', ['$event'])
   public keys(event: KeyboardEvent): void {
     switch (event.key) {
       case 'PageUp':
@@ -156,19 +156,23 @@ export class SokobanComponent implements AfterViewInit, OnDestroy, OnInit {
       case 'PageDown':
         this.levels.toPriorLevel();
         break;
-      case 'ArrowUp':
+      case 'ArrowUp': // FF and Chrome
+      case 'Up': // Edge
         this.levels.moveMan(0, -1);
         this.imgRakisuta.Y = 3;
         break;
       case 'ArrowDown':
+      case 'Down':
         this.levels.moveMan(0, 1);
         this.imgRakisuta.Y = 0;
         break;
       case 'ArrowLeft':
+      case 'Left':
         this.levels.moveMan(-1, 0);
         this.imgRakisuta.Y = 1;
         break;
       case 'ArrowRight':
+      case 'Right':
         this.levels.moveMan(1, 0);
         this.imgRakisuta.Y = 2;
         break;
