@@ -48,7 +48,7 @@ export class Levels {
     this.manPos = undefined;
     this.moveCount = 0;
     this.pushCount = 0;
-    this.startTime = undefined;
+    this.startTime = Date.now();
     this.wonTime = undefined;
   }
 

@@ -9,7 +9,7 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import { Levels, IMove, IWin } from './levels.service';
+import { IMove, IPosition, IWin, Levels } from './levels.service';
 import { Sprite } from './sprite';
 import { Subscription } from 'rxjs/Subscription';
 
@@ -17,27 +17,42 @@ import { Subscription } from 'rxjs/Subscription';
   selector: 'app-sokoban',
   template: `
   <div class="game-screen">
-    <h1>Sokoban</h1>
-    <h2>Level: {{ levels.CurrentLevel }} / {{ levels.LastLevel }} - Elapsed time: {{ getElapsed() }} s</h2>
+    <div class="game-header">
+      <h1>Sokoban</h1>
+      <h2>Level: {{ levels.CurrentLevel }} / {{ levels.LastLevel }} - Elapsed time: {{ getElapsed() }} s</h2>
+    </div>
     <canvas #canv class="game-board" width="2048" height="1536"></canvas>
+    <div class="game-footer">
+      Teste
+    </div>
   </div>
   `,
-  styles: [`
+  styles: [
+    `
   .game-screen {
     width: 100%;
     height: 100%;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .game-footer {
   }
   .game-board {
     width: 100%;
-    height: 100%;
+    height: 300px;
+    flex: 1;
   }
-  `],
+  .game-footer {
+  }
+  `
+  ],
   providers: [Levels],
   encapsulation: ViewEncapsulation.None
 })
 export class SokobanComponent implements AfterViewInit, OnDestroy, OnInit {
   private subscriptions: Array<Subscription> = [];
+  private touchPosStart: IPosition;
   @ViewChild('canv') canvRef: ElementRef;
   public canv: HTMLCanvasElement;
   public ctx: CanvasRenderingContext2D;
@@ -55,7 +70,9 @@ export class SokobanComponent implements AfterViewInit, OnDestroy, OnInit {
   constructor(public ngZone: NgZone, public levels: Levels) {
     for (let i = 0; i < 4; i++) {
       this.imgBorder.push(new Sprite(`./assets/images/border${i}.png`, 1, 1));
-      this.imgStarField.push(new Sprite(`./assets/images/starfield-${i + 1}.jpg`, 1, 1));
+      this.imgStarField.push(
+        new Sprite(`./assets/images/starfield-${i + 1}.jpg`, 1, 1)
+      );
     }
     this.imgRakisuta = new Sprite('./assets/images/rakisuta1.png', 3, 4);
     this.imgGoal = new Sprite('./assets/images/goal.png', 1, 1);
@@ -72,19 +89,27 @@ export class SokobanComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   ngOnInit() {
-    this.subscriptions.push(this.levels.onLevelFinished.subscribe(won => {
-      this.onWining(won);
-    }));
-    this.subscriptions.push(this.levels.onManMove.subscribe(move => {
-      this.onManMove(move);
-    }));
-    this.subscriptions.push(this.levels.onObjMove.subscribe(move => {
-      this.onObjMove(move);
-    }));
+    this.subscriptions.push(
+      this.levels.onLevelFinished.subscribe(won => {
+        this.onWining(won);
+      })
+    );
+    this.subscriptions.push(
+      this.levels.onManMove.subscribe(move => {
+        this.onManMove(move);
+      })
+    );
+    this.subscriptions.push(
+      this.levels.onObjMove.subscribe(move => {
+        this.onObjMove(move);
+      })
+    );
   }
 
   ngOnDestroy() {
-    this.subscriptions.forEach(s => { s.unsubscribe(); });
+    this.subscriptions.forEach(s => {
+      s.unsubscribe();
+    });
   }
 
   public gameLoop(): void {
@@ -117,9 +142,15 @@ export class SokobanComponent implements AfterViewInit, OnDestroy, OnInit {
     for (const row of board) {
       let iCol = 0;
       for (const cell of row) {
-        if (cell === 2) { // border
+        if (cell === 2) {
+          // border
           let border = 3;
-          if (iCol > 0 && row[iCol - 1] === 2 && iCol < row.length - 1 && row[iCol + 1] === 2) {
+          if (
+            iCol > 0 &&
+            row[iCol - 1] === 2 &&
+            iCol < row.length - 1 &&
+            row[iCol + 1] === 2
+          ) {
             border = 1;
           } else if (iCol > 0 && row[iCol - 1] === 2) {
             border = 2;
@@ -147,35 +178,85 @@ export class SokobanComponent implements AfterViewInit, OnDestroy, OnInit {
     return Math.floor(this.levels.ElapsedTime / 1000);
   }
 
+  private toNextLevel() {
+    this.levels.toNextLevel();
+  }
+
+  private toPriorLevel() {
+    this.levels.toPriorLevel();
+  }
+
+  private moveUp() {
+    this.levels.moveMan(0, -1);
+    this.imgRakisuta.Y = 3;
+  }
+
+  private moveDown() {
+    this.levels.moveMan(0, 1);
+    this.imgRakisuta.Y = 0;
+  }
+
+  private moveLeft() {
+    this.levels.moveMan(-1, 0);
+    this.imgRakisuta.Y = 1;
+  }
+
+  private moveRight() {
+    this.levels.moveMan(1, 0);
+    this.imgRakisuta.Y = 2;
+  }
+
   @HostListener('document:keydown', ['$event'])
   public keys(event: KeyboardEvent): void {
     switch (event.key) {
       case 'PageUp':
-        this.levels.toNextLevel();
+        this.toNextLevel();
         break;
       case 'PageDown':
-        this.levels.toPriorLevel();
+        this.toPriorLevel();
         break;
       case 'ArrowUp': // FF and Chrome
       case 'Up': // Edge
-        this.levels.moveMan(0, -1);
-        this.imgRakisuta.Y = 3;
+        this.moveUp();
         break;
       case 'ArrowDown':
       case 'Down':
-        this.levels.moveMan(0, 1);
-        this.imgRakisuta.Y = 0;
+        this.moveDown();
         break;
       case 'ArrowLeft':
       case 'Left':
-        this.levels.moveMan(-1, 0);
-        this.imgRakisuta.Y = 1;
+        this.moveLeft();
         break;
       case 'ArrowRight':
       case 'Right':
-        this.levels.moveMan(1, 0);
-        this.imgRakisuta.Y = 2;
+        this.moveRight();
         break;
+    }
+  }
+
+  @HostListener('document:touchstart', ['$event'])
+  public touchStart(event: TouchEvent) {
+    const tStart = event.touches[0] || event.changedTouches[0];
+    this.touchPosStart = { x: tStart.pageX, y: tStart.pageY };
+  }
+
+  @HostListener('document:touchend', ['$event'])
+  public touchEnd(event: TouchEvent) {
+    const tEnd = event.touches[0] || event.changedTouches[0];
+    const dx = this.touchPosStart.x - tEnd.pageX;
+    const dy = this.touchPosStart.y - tEnd.pageY;
+    if (Math.abs(dx) > Math.abs(dy)) {
+      if (dx > 0) {
+        this.moveLeft();
+      } else {
+        this.moveRight();
+      }
+    } else {
+      if (dy > 0) {
+        this.moveUp();
+      } else {
+        this.moveDown();
+      }
     }
   }
 
