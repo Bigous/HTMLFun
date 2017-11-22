@@ -9,7 +9,7 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import { Levels, IMove, IWin } from '../levels.service';
+import { Levels, IMove, IWin } from './levels.service';
 import { Sprite } from './sprite';
 import { Subscription } from 'rxjs/Subscription';
 
@@ -23,6 +23,7 @@ import { Subscription } from 'rxjs/Subscription';
   </div>
   `,
   styles: [],
+  providers: [Levels],
   encapsulation: ViewEncapsulation.None
 })
 export class SokobanComponent implements AfterViewInit, OnDestroy, OnInit {
