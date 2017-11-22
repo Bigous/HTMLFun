@@ -9,7 +9,7 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import { Levels } from '../levels.service';
+import { Levels, IMove, IWin } from '../levels.service';
 import { Sprite } from './sprite';
 import { Subscription } from 'rxjs/Subscription';
 
@@ -163,15 +163,16 @@ export class SokobanComponent implements AfterViewInit, OnDestroy, OnInit {
     }
   }
 
-  onWining(won: { time: number, moves: number, pushes: number }): void {
+  onWining(won: IWin): void {
     // TODO: Implement wining behavior.
+    console.log('Ganhou porra!', won);
   }
 
-  onManMove(move: { oldPos: { x: number, y: number }, newPos: { x: number, y: number } }) {
+  onManMove(move: IMove) {
     // TODO: Implement soft transition for man
   }
 
-  onObjMove(move: { oldPos: { x: number, y: number }, newPos: { x: number, y: number } }) {
+  onObjMove(move: IMove) {
     // TODO: Implement soft transition for object
   }
 }

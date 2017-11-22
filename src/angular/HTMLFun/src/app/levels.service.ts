@@ -1,6 +1,22 @@
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Injectable } from '@angular/core';
 
+export interface IPosition {
+  x: number;
+  y: number;
+}
+
+export interface IWin {
+  time: number;
+  moves: number;
+  pushes: number;
+}
+
+export interface IMove {
+  oldPos: IPosition;
+  newPos: IPosition;
+}
+
 @Injectable()
 export class Levels {
   private levels = levels;
@@ -9,19 +25,16 @@ export class Levels {
   private maxColumn: number;
   private numOfGoals: number;
   private numOfTreasures: number;
-  private manPos: { x: number; y: number };
+  private manPos: IPosition;
   private moveCount: number;
   private pushCount: number;
   private startTime: number;
   private wonTime: number;
 
   public onLevelChanged: BehaviorSubject<number> = new BehaviorSubject<number>(undefined);
-  public onLevelFinished: BehaviorSubject<{ time: number, moves: number, pushes: number }> =
-    new BehaviorSubject<{ time: number, moves: number, pushes: number }>(undefined);
-  public onManMove: BehaviorSubject<{ oldPos: { x: number, y: number }, newPos: { x: number, y: number } }> =
-    new BehaviorSubject<{ oldPos: { x: number, y: number }, newPos: { x: number, y: number } }>(undefined);
-  public onObjMove: BehaviorSubject<{ oldPos: { x: number, y: number }, newPos: { x: number, y: number } }> =
-    new BehaviorSubject<{ oldPos: { x: number, y: number }, newPos: { x: number, y: number } }>(undefined);
+  public onLevelFinished: BehaviorSubject<IWin> = new BehaviorSubject<IWin>(undefined);
+  public onManMove: BehaviorSubject<IMove> = new BehaviorSubject<IMove>(undefined);
+  public onObjMove: BehaviorSubject<IMove> = new BehaviorSubject<IMove>(undefined);
 
   constructor() {
     this.undefineAll();
@@ -90,7 +103,7 @@ export class Levels {
     return this.Level.length;
   }
 
-  get ManPos(): { x: number; y: number } {
+  get ManPos(): IPosition {
     const board = this.Board;
     return this.manPos;
   }
@@ -188,7 +201,7 @@ export class Levels {
     return this.pushCount;
   }
 
-  changeManPos(newPos: { x: number; y: number }) {
+  changeManPos(newPos: IPosition) {
     const oldPos = this.manPos;
     this.board[newPos.y][newPos.x] += 4;
     this.board[oldPos.y][oldPos.x] -= 4;
@@ -198,8 +211,8 @@ export class Levels {
   }
 
   changeObjPos(
-    oldPos: { x: number; y: number },
-    newPos: { x: number; y: number }
+    oldPos: IPosition,
+    newPos: IPosition
   ) {
     const oldLocation = this.board[oldPos.y][oldPos.x];
     if (oldLocation === 6) {
@@ -243,7 +256,7 @@ export class Levels {
   testLevelWon() {
     if (this.wonTime === undefined && this.numOfGoals === this.numOfTreasures) {
       this.wonTime = Date.now();
-      const won = {
+      const won: IWin = {
         time: this.ElapsedTime,
         moves: this.moveCount,
         pushes: this.pushCount
