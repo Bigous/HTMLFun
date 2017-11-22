@@ -1,4 +1,4 @@
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { Subject } from 'rxjs/Subject';
 import { Injectable } from '@angular/core';
 
 export interface IPosition {
@@ -31,10 +31,10 @@ export class Levels {
   private startTime: number;
   private wonTime: number;
 
-  public onLevelChanged: BehaviorSubject<number> = new BehaviorSubject<number>(undefined);
-  public onLevelFinished: BehaviorSubject<IWin> = new BehaviorSubject<IWin>(undefined);
-  public onManMove: BehaviorSubject<IMove> = new BehaviorSubject<IMove>(undefined);
-  public onObjMove: BehaviorSubject<IMove> = new BehaviorSubject<IMove>(undefined);
+  public onLevelChanged: Subject<number> = new Subject<number>();
+  public onLevelFinished: Subject<IWin> = new Subject<IWin>();
+  public onManMove: Subject<IMove> = new Subject<IMove>();
+  public onObjMove: Subject<IMove> = new Subject<IMove>();
 
   constructor() {
     this.undefineAll();
