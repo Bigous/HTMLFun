@@ -16,13 +16,23 @@ import { Subscription } from 'rxjs/Subscription';
 @Component({
   selector: 'app-sokoban',
   template: `
-  <div>
+  <div class="game-screen">
     <h1>Sokoban</h1>
     <h2>Level: {{ levels.CurrentLevel }} / {{ levels.LastLevel }} - Elapsed time: {{ getElapsed() }} s</h2>
-    <canvas #canv width="800" height="600"></canvas>
+    <canvas #canv class="game-board" width="2048" height="1536"></canvas>
   </div>
   `,
-  styles: [],
+  styles: [`
+  .game-screen {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  .game-board {
+    width: 100%;
+    height: 100%;
+  }
+  `],
   providers: [Levels],
   encapsulation: ViewEncapsulation.None
 })
@@ -93,6 +103,7 @@ export class SokobanComponent implements AfterViewInit, OnDestroy, OnInit {
       return;
     }
     this.lastTime = time;
+    // console.log(this.canv.clientWidth);
     const sx = this.canv.width / this.levels.MaxColumn;
     const sy = this.canv.height / this.levels.MaxRow;
     const s = Math.floor(Math.min(sx, sy));
