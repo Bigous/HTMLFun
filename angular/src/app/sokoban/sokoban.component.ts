@@ -138,6 +138,9 @@ export class SokobanComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   public renderFrame(time: number): void {
+    if (this.levels.isLoading) {
+      return;
+    }
     const elapsed = time - this.lastTime;
     if (elapsed < 99) {
       return;
