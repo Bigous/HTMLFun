@@ -250,21 +250,21 @@ export class LevelsService {
     newPos.x += deltaX;
     newPos.y += deltaY;
     const newLocation = this.board[newPos.y][newPos.x];
-    const newLocation2 = this.board[oldPos.y + 2 * deltaY][
-      oldPos.x + 2 * deltaX
-    ];
+
     if (newLocation === 1 || newLocation === 3) {
       // Inside or goal
       this.changeManPos(newPos);
-    } else if (
-      (newLocation === 4 || newLocation === 6) &&
-      (newLocation2 === 1 || newLocation2 === 3)
-    ) {
-      const newPos2 = { ...newPos };
-      newPos2.x += deltaX;
-      newPos2.y += deltaY;
-      this.changeObjPos(newPos, newPos2);
-      this.changeManPos(newPos);
+    } else if (newLocation === 4 || newLocation === 6) {
+      const newLocation2 = this.board[oldPos.y + 2 * deltaY][
+        oldPos.x + 2 * deltaX
+      ];
+      if (newLocation2 === 1 || newLocation2 === 3) {
+        const newPos2 = { ...newPos };
+        newPos2.x += deltaX;
+        newPos2.y += deltaY;
+        this.changeObjPos(newPos, newPos2);
+        this.changeManPos(newPos);
+      }
     }
     this.testLevelWon();
   }
