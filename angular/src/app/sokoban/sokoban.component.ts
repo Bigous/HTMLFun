@@ -29,7 +29,7 @@ import { Subscription } from 'rxjs/Subscription';
       Teste
     </div>
     <audio autoplay *ngIf="finished==='win'">
-      <source src="./assets/sounds/level-up/chipquest.wav" type="audio/wav">
+      <source src="./assets/sounds/level-up/piano.wav" type="audio/wav">
     </audio>
   </div>
   `,
