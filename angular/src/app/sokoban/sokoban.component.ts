@@ -17,6 +17,9 @@ import { Subscription } from 'rxjs/Subscription';
   selector: 'app-sokoban',
   template: `
   <div class="game-screen">
+    <audio #backSound autoplay loop>
+      <source src="./assets/sounds/puzzle-0{{ levels.CurrentLevel % 2 + 1 }}.mp3" type="audio/mp3">
+    </audio>
     <div class="game-header">
       <h1>Sokoban</h1>
       <h2>Level: {{ levels.CurrentLevel }} / {{ levels.LastLevel }} - Elapsed time: {{ getElapsed() }} s</h2>
@@ -25,6 +28,9 @@ import { Subscription } from 'rxjs/Subscription';
     <div class="game-footer">
       Teste
     </div>
+    <audio autoplay *ngIf="finished==='win'">
+      <source src="./assets/sounds/level-up/chipquest.wav" type="audio/wav">
+    </audio>
   </div>
   `,
   styles: [
@@ -54,6 +60,7 @@ export class SokobanComponent implements AfterViewInit, OnDestroy, OnInit {
   private subscriptions: Array<Subscription> = [];
   private touchPosStart: IPosition;
   @ViewChild('canv') canvRef: ElementRef;
+  @ViewChild('backSound') backSound: ElementRef;
   public canv: HTMLCanvasElement;
   public ctx: CanvasRenderingContext2D;
   public moves = 0;
@@ -66,6 +73,7 @@ export class SokobanComponent implements AfterViewInit, OnDestroy, OnInit {
   public imgObject: Sprite;
   public imgList: Array<Array<Sprite>> = [];
   public lastTime = 0;
+  public finished = '';
 
   constructor(public ngZone: NgZone, public levels: LevelsService) {
     for (let i = 0; i < 4; i++) {
@@ -110,6 +118,13 @@ export class SokobanComponent implements AfterViewInit, OnDestroy, OnInit {
     this.subscriptions.forEach(s => {
       s.unsubscribe();
     });
+  }
+
+  ngAfterViewInit() {
+    this.canv = this.canvRef.nativeElement;
+    this.ctx = this.canv.getContext('2d');
+    this.backSound.nativeElement.volume = 0.2;
+    this.gameLoop();
   }
 
   public gameLoop(): void {
@@ -168,22 +183,18 @@ export class SokobanComponent implements AfterViewInit, OnDestroy, OnInit {
     }
   }
 
-  ngAfterViewInit() {
-    this.canv = this.canvRef.nativeElement;
-    this.ctx = this.canv.getContext('2d');
-    this.gameLoop();
-  }
-
   getElapsed(): number {
     return Math.floor(this.levels.ElapsedTime / 1000);
   }
 
   private toNextLevel() {
     this.levels.toNextLevel();
+    this.finished = '';
   }
 
   private toPriorLevel() {
     this.levels.toPriorLevel();
+    this.finished = '';
   }
 
   private moveUp() {
@@ -263,6 +274,7 @@ export class SokobanComponent implements AfterViewInit, OnDestroy, OnInit {
   onWining(won: IWin): void {
     // TODO: Implement wining behavior.
     console.log('Ganhou porra!', won);
+    this.finished = 'win';
   }
 
   onManMove(move: IMove) {
